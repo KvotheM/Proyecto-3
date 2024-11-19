@@ -1,0 +1,63 @@
+#include <Arduino.h>
+#include <Temperature_LM75_Derived.h>
+#include <Wire.h>
+#include <Adafruit_NeoPixel.h>
+
+Generic_LM75 temperature;//provee valores de temperatura con una incertidumbre de 0.5°C
+char comando = '0';
+void Transmision_UART();
+#define Neo_P 27       // Neopixel
+#define NUMPIXELS 8// Numero de leds 
+Adafruit_NeoPixel pixels(NUMPIXELS, Neo_P, NEO_GRB + NEO_KHZ800);
+
+void setup() {
+ pinMode(Neo_P,OUTPUT);
+  Serial.begin(115200);
+  Serial2.begin(115200);
+  Wire.begin();
+  pixels.begin();//inicializa el neopixel
+  pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+  pixels.show();
+}
+
+void loop() {
+  Serial.print("Temperature = ");
+  Serial.print(temperature.readTemperatureC());
+  Serial.println(" C");
+  delay(500);
+  Transmision_UART();
+  delay(500);
+
+  
+}
+void Transmision_UART(void){
+  if (Serial2.available() > 0) {
+    comando = Serial2.read();  // Leer el comando desde UART2 (Serial)
+    Serial.print("Recibido: ");
+    Serial.println(comando);
+    pixels.setPixelColor(0, pixels.Color(255, 0, 0)); // Primer LED en rojo
+    pixels.show();                                   // Envía datos a la tira
+    delay(500);
+    pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+  }
+  if  (comando == '1'){
+    Serial.print("HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    Serial2.print(temperature.readTemperatureC());
+    Serial2.println(" C");
+    pixels.setPixelColor(1, pixels.Color(0, 255, 0)); // Primer LED en rojo
+    pixels.show();                                   // Envía datos a la tira
+    delay(500);
+    pixels.setPixelColor(1, pixels.Color(0, 0, 0));
+    pixels.show();
+    comando = '0';
+  }
+  if (comando =='2'){
+    pixels.setPixelColor(2, pixels.Color(0, 0, 255));
+    pixels.show();                                   // Envía datos a la tira
+    delay(500);
+    pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+    pixels.show();
+    comando = '0';
+  }
+
+}
