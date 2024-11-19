@@ -35,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+//Se definen los parámetros para poder usar la pantalla y almacenar datos en la memoria SD
 SPI_HandleTypeDef hspi1;
 FATFS fs;
 FATFS *pfs;
@@ -59,22 +60,32 @@ UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+//Se definen las variables que serán usadas a lo largo del código para diferentes tareas. 
+
+//Estas variables activan los ciclos de funcionamiento. inter activa el de recepción de datos del ESP32 y el inter2 guarda los datos en la SD
 int inter=0;
 int inter2=0;
+
+//se definen los buffers para comunicarse con el usuario por medio de la UART
 char escritura[100];
+
+//Se estaablecen los buffers para recibir datos del ESP32 y colcarlos en un formato que se pueda procesar para hacer el análisis de temperatura. 
 uint8_t sensor[9];
 char mensaje = '0';
 uint8_t medicion[5];
 float temperatura[4];
 float tempe;
+
+//Se mandan a llamar las matrices que contienen las distintas imágenes que se colocarpan en la pantalla TFT dependiendo del caso necesario
 extern uint8_t temp[];
 extern uint8_t num[];
 extern uint8_t ping[];
 extern uint8_t ice[];
 extern uint8_t gorila[];
 extern uint8_t chile[];
-int x = 25;
-int paco = 0;
+
+//Se define x que servirá para desplegar las imágenes de manera adecuada. 
+int x = 25; 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +96,7 @@ static void MX_UART5_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
+//Mandaos a llamar las funciones de interrupción, las de comunicación UART y la función num_pantalla que desplegará la info en la TFT
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void transmit_uart(char *message);
 void num_pantalla(uint8_t medicion[5]);
@@ -132,8 +144,8 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+//Iniciamos la pantalla y la colocamos en negro 
   LCD_Init();
-
   LCD_Clear(0x00);
 
 
@@ -143,15 +155,22 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	/* En el caso de que "inter" (se vuelve uno al presionar un botón que activa una interrupción sea igual a uno se activa este ciclo*/
 	 if(inter==1){
+		//Se coloca la pantalla en negro (por si acaso estaba desplegado algún mensaje previo y se cambia el valor de mensaje a 1
 		LCD_Clear(0x00);
 	  	mensaje='1';
 		sprintf(escritura, "La medicion del sensor es:\n");
+		//Se le envía el mensaje al usuario
 		HAL_UART_Transmit(&huart2, (uint8_t*)escritura, strlen(escritura), HAL_MAX_DELAY);
 		HAL_Delay(1000);
+		//Se le envía la variable mensaje al ESP32 para que ejecute la instrucción necesaria (leer el sensor y regresar el valor)
 		HAL_UART_Transmit(&huart5,(uint8_t*)&mensaje,sizeof(mensaje),10);
+		//El valor se almacena en la variable sensor
 		HAL_UART_Receive(&huart5,(uint8_t*) &sensor, sizeof(sensor), HAL_MAX_DELAY);
 		HAL_UART_Transmit(&huart2,(uint8_t*)&sensor,sizeof(sensor),HAL_MAX_DELAY);
+		//Se iguala el valor de medicion al valor que nos interese de sensor que son los primeros 5 datos,
+		//También se define la variable temperatura 
 		for(int i = 0; i < 5; i ++){
 			medicion[i] = sensor[i];
 			if(i != 2 & i < 2){
@@ -162,6 +181,7 @@ int main(void)
 				temperatura[3] = sensor[4];
 			}
 		}
+		//Se imprime el mensaje de "Temperatura" y el valor que esta tiene haciendo uso de la función num_pantalla
 		int l = 0;
 		for(int y = 0; y < 11; y ++){
 			LCD_Sprite(l+1, 25, 25, 25, temp, 11, y, 0, 1);
@@ -172,10 +192,11 @@ int main(void)
 			x = x + 10;
 		}
 		x = 0;
-
+		//Se define tempe y se coloca la pantalla otra vez en negro
 		tempe = (temperatura[0]-48)*10 + (temperatura[1]-48) + (temperatura[2]-48)/10.0 + (temperatura[3]-48)/100.0;
 		HAL_Delay(1000);
 		LCD_Clear(0x00);
+		//Los ifs anidados buscan colocar la temperatura en uno de los 3 rangos medidos para desplegar la imagen apropiada para cada uno
 		if(tempe <= 27.00){
 			HAL_Delay(1000);
 			LCD_Bitmap(0, 0, 64, 64, ice);
@@ -190,7 +211,8 @@ int main(void)
 			paco = 1;
 			LCD_Bitmap(0, 0, 200, 200, chile);
 		}
-        memset(sensor, 0, sizeof(sensor));  // limpiar buffer
+	//Se limpia el buffer y se regresan las variables a 0
+        memset(sensor, 0, sizeof(sensor));
         mensaje = '0';
         inter=0;
 
