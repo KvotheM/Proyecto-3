@@ -30,32 +30,36 @@ void loop() {
 
   
 }
+//Función para enviar datos de sensor al STM32
 void Transmision_UART(void){
+//Se detecta la existencia de valores mayores a 0 en el canal y si si existen se pide al neopixel que muestre el color rojo 
   if (Serial2.available() > 0) {
     comando = Serial2.read();  // Leer el comando desde UART2 (Serial)
     Serial.print("Recibido: ");
-    Serial.println(comando);
+    Serial.println(comando);//Se visualiza que envió el STM32
     pixels.setPixelColor(0, pixels.Color(255, 0, 0)); // Primer LED en rojo
     pixels.show();                                   // Envía datos a la tira
     delay(500);
     pixels.setPixelColor(0, pixels.Color(0, 0, 0));
   }
+//Si el valor enviado por el núcleo es 1 se ejecuta la lectura del sensor 
   if  (comando == '1'){
-    Serial.print("HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    Serial2.print(temperature.readTemperatureC());
+    Serial.print("HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");//Se emplea para comprobar que se este ejecutando la acción
+    Serial2.print(temperature.readTemperatureC());//Lee la temperatura del sensor 
     Serial2.println(" C");
-    pixels.setPixelColor(1, pixels.Color(0, 255, 0)); // Primer LED en rojo
+    pixels.setPixelColor(1, pixels.Color(0, 255, 0)); // Segundo LED en verde
     pixels.show();                                   // Envía datos a la tira
     delay(500);
-    pixels.setPixelColor(1, pixels.Color(0, 0, 0));
+    pixels.setPixelColor(1, pixels.Color(0, 0, 0));//Apaga el neopixel
     pixels.show();
-    comando = '0';
+    comando = '0';//Se regresa la variable a su condición inicial para evitar traslape de instrucciones 
   }
+//Si la instrucción enviada por el núcleo tiene el valor de 2 se indica el proceso de guardado de datos
   if (comando =='2'){
-    pixels.setPixelColor(2, pixels.Color(0, 0, 255));
+    pixels.setPixelColor(2, pixels.Color(0, 0, 255));//Se muestra el color azul en la tercera LED
     pixels.show();                                   // Envía datos a la tira
     delay(500);
-    pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+    pixels.setPixelColor(2, pixels.Color(0, 0, 0));//Dejamos de mostrar color 
     pixels.show();
     comando = '0';
   }
