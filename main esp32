@@ -4,7 +4,7 @@
 #include <Adafruit_NeoPixel.h>
 
 Generic_LM75 temperature;//provee valores de temperatura con una incertidumbre de 0.5°C
-char comando = '0';
+char comando = '0';//Se inicializa la variable de instrucción para uart 
 void Transmision_UART();
 #define Neo_P 27       // Neopixel
 #define NUMPIXELS 8// Numero de leds 
@@ -12,12 +12,12 @@ Adafruit_NeoPixel pixels(NUMPIXELS, Neo_P, NEO_GRB + NEO_KHZ800);
 
 void setup() {
  pinMode(Neo_P,OUTPUT);
-  Serial.begin(115200);
-  Serial2.begin(115200);
-  Wire.begin();
+  Serial.begin(115200);//Inicializamos comunicación serial con al computadora
+  Serial2.begin(115200);//Inicializamos comunicación serial con otro dispositivo 
+  Wire.begin();//Inicializamos comunicación I2C con el sensor
   pixels.begin();//inicializa el neopixel
   pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-  pixels.show();
+  pixels.show();//Mostramos el color en el neopixel 
 }
 
 void loop() {
@@ -25,7 +25,7 @@ void loop() {
   Serial.print(temperature.readTemperatureC());
   Serial.println(" C");
   delay(500);
-  Transmision_UART();
+  Transmision_UART();//Se ejecuta la comunicación UART entre microcontroladores 
   delay(500);
 
   
