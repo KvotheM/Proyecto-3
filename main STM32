@@ -217,13 +217,16 @@ int main(void)
         inter=0;
 
 	  }
+	//cuando inter2 es 1 se inicia este ciclo
 	 if(inter2 == 1){
+		//Se le envía al esp32 la instrucción de ejecutar el comando dos
+		//Se le indica al usuario que se guaradará la información
 		 mensaje = '2';
 		 sprintf(escritura, "Guardando datos....\n");
 		 HAL_UART_Transmit(&huart2, (uint8_t*)escritura, strlen(escritura), HAL_MAX_DELAY);
 		 HAL_Delay(1000);
 		 HAL_UART_Transmit(&huart5,(uint8_t*)&mensaje,sizeof(mensaje),10);
-
+		//Se hace el protocolo para guardar la información en la SD
 		 fres = f_mount(&fs, "/",0);
 		 if (fres == FR_OK) {
 		 transmit_uart("Micro SD card is mounted successfully!\n");
@@ -249,6 +252,7 @@ int main(void)
 		 } else if (fres != FR_OK) {
 		 transmit_uart("The Micro SD was not unmounted!");
 		 }
+		//Se regresan las variables a 0
 		 mensaje='0';
 		 inter2=0;
 
@@ -497,6 +501,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+//Se define la función de la interrupciones, dependiendo del botón presionado es la variable que cambia
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == bot_1_Pin ){
@@ -504,9 +509,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	else if(GPIO_Pin == bot_2_Pin){
 		inter2=1;}
 }
+//La función transmite el mensaje al usuario por medio de la UART
 void transmit_uart(char *message) {
     HAL_UART_Transmit(&huart2, (uint8_t *)message, strlen(message), HAL_MAX_DELAY);
 }
+//La función revisa el número indicado e imprime en la TFT el valor que se necesite dependiendo de la tempertatura indicada
 void num_pantalla(uint8_t medicion[]){
 	if(medicion == 48){
 		LCD_Sprite(x, 65, 32, 32, num, 11, 0, 0, 1);
